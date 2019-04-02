@@ -2,10 +2,10 @@ Scriptname EXMPlaceOrderCastMarkerScript extends ObjectReference
 {Script for the object placed at the target position of the EXM "Order Spell".
 Used for orders that require a reference position that isn't the player}
 
-ReferenceAlias Property MovedObjectAlias  Auto  
+EXMCombatOrdersScript Property ordersScript Auto
 
 Event OnLoad()
-	MovedObjectAlias.GetReference().MoveTo(self)
+	ordersScript.StartOrderProcedure(self)
 	RegisterForSingleUpdate(5.0)
 EndEvent
 

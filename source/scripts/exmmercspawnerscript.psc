@@ -53,6 +53,14 @@ MiscObject Property Gold001  Auto
 
 GlobalVariable Property MercGoldCost Auto
 
+GlobalVariable Property DefaultArcherOrder Auto
+
+GlobalVariable Property DefaultMeleeOrder Auto
+
+GlobalVariable Property DefaultRangerOrder Auto
+
+Faction Property MercRankedFaction Auto
+
 ActorBase Property NordF Auto  
 ActorBase Property NordM Auto 
 ActorBase Property ArgoF Auto 
@@ -74,8 +82,8 @@ ActorBase Property BretM Auto
 ActorBase Property RedgF Auto 
 ActorBase Property RedgM Auto 
 
-Function TakeGoldFromPlayer(int amount)
-	Game.GetPlayer().RemoveItem(Gold001, amount)
+Function TakeGoldFrom(Actor target,int amount)
+	target.RemoveItem(Gold001, amount)
 endFunction
 
 Function RefreshMercGoldCost()
@@ -164,7 +172,7 @@ Function SpawnMerc(bool isArcher, bool usesSpecialAmmo = false, bool justOneMerc
 			Form newBoots = defaultMercPossibleBoots
 			mercActor.AddItem(newBoots)
 			
-			TakeGoldFromPlayer(MercGoldCost.GetValue() as int)
+			TakeGoldFrom(playr, mercCost)
 			
 			
 			Utility.Wait(0.2)
@@ -184,9 +192,8 @@ Function SpawnMerc(bool isArcher, bool usesSpecialAmmo = false, bool justOneMerc
 				endif
 			endif
 			
-			EXMClearRefOnDeath mercScript = (aliasForTheMerc as EXMClearRefOnDeath)
 			;also set up skills for melee and archers (things seem to max out around level 40, so 2.5 per level seems good)
-			;and set the type of merc in the merc script so that we can replace that merc in case of death
+			;and set the type of merc in the merc faction so that they get the current combat orders and can be replaced correctly on death
 			if isArcher
 				mercActor.SetAV("LightArmor", playerLevel * 2.1)
 				mercActor.SetAV("HeavyArmor", playerLevel * 1.0)
@@ -196,9 +203,9 @@ Function SpawnMerc(bool isArcher, bool usesSpecialAmmo = false, bool justOneMerc
 				mercActor.SetAV("Marksman", playerLevel * 2.5)
 				mercActor.SetAV("Sneak", playerLevel * 2.5)
 				if usesSpecialAmmo
-					mercScript.mercType = "rangedCustom"
+					mercActor.SetFactionRank(MercRankedFaction, (DefaultRangerOrder.GetValue() as int))
 				else
-					mercScript.mercType = "rangedArrows"
+					mercActor.SetFactionRank(MercRankedFaction, (DefaultArcherOrder.GetValue() as int))
 				endif
 			else
 				mercActor.SetAV("LightArmor", playerLevel * 1.0)
@@ -207,7 +214,8 @@ Function SpawnMerc(bool isArcher, bool usesSpecialAmmo = false, bool justOneMerc
 				mercActor.SetAV("OneHanded", playerLevel * 2.1)
 				mercActor.SetAV("TwoHanded", playerLevel * 2.1)
 				mercActor.SetAV("Marksman", playerLevel * 1.0)
-				mercScript.mercType = "melee"
+				
+				mercActor.SetFactionRank(MercRankedFaction, (DefaultMeleeOrder.GetValue() as int))
 			endif
 			
 			if mercsRegenHealth
@@ -239,37 +247,35 @@ Function DismissAllMercs()
 	EndWhile
 endFunction
 
-Function MakeMercGiveItemsToEmissi(Actor theMerc, bool onlyUnequippedItems = true, bool lockMercAfterGiving = false, bool clearMercAliasAfterGiving = false, bool deleteMercWhenAble = false)
-	ReferenceAlias mercRefAlias = GetAliasSlotOfTargetMerc(theMerc)
-	EXMClearRefOnDeath mercScript = (mercRefAlias as EXMClearRefOnDeath)
+Function MakeMercNoLongerNeeded(EXMClearRefOnDeath mercScript, bool shouldReHireIfEnabled = true)
+	Actor theMerc = mercScript.GetReference() as Actor
 	
-	if(lockMercAfterGiving)
-		theMerc.BlockActivation(true)
-	endif
-	
-	if(clearMercAliasAfterGiving)
-		mercScript.Clear()
+	if(autoReHireMercs && shouldReHireIfEnabled)
+		;1=archer, 2=melee, 3=ranger (check EXMCombatOrdersScript for more details)
+		int mercType = ((((theMerc.GetFactionRank(MercRankedFaction) - 1) as float) / 4.0) as int) + 1
+		if(mercType < 1)
+			;if, for some reason, we're not of any type, we're considered archers
+			mercType = 1
+		endif
 		
-		theMerc.RemoveFromAllFactions()
-		
-	endif
-	
-	if(deleteMercWhenAble)
-		theMerc.DeleteWhenAble()
-	endif
-	
-endFunction
-
-Function TryReHireIfActive(string deadMercType)
-	if autoReHireMercs
-		if(deadMercType == "rangedArrows")
+		if(mercType == 1)
 			SpawnMerc(true, false, true)
-		elseif(deadMercType == "melee")
+		elseif(mercType == 2)
 			SpawnMerc(false, false, true)
-		elseif(deadMercType == "rangedCustom")
+		else
 			SpawnMerc(true, true, true)
 		endif
+		
 	endif
+	
+	theMerc.BlockActivation(true)
+
+	mercScript.Clear()
+	
+	theMerc.RemoveFromAllFactions()
+	
+	theMerc.DeleteWhenAble()
+	
 endFunction
 
 ReferenceAlias Function GetFreeAliasSlot()
@@ -345,7 +351,7 @@ int Function GetGearFromEmissi(Actor theMerc, bool preferLightArmor = false)
 	While iFormIndex > 0
 		iFormIndex -= 1
 		;since we don't really know what those items are, we offer the player the chance to randomize those items being given or not
-		if((randomizeUnspecifiedItems && Utility.RandomInt(0,3) < 2) || !randomizeUnspecifiedItems)
+		if(!randomizeUnspecifiedItems || (randomizeUnspecifiedItems && Utility.RandomInt(0,3) < 2))
 			Form kForm = itemsHeldByEmissi.GetAt(iFormIndex)
 			theMerc.AddItem(kForm)
 		endif
