@@ -17,6 +17,8 @@ Message Property ExtraOptionsBox  Auto
 
 Spell Property summonEmissiSpell auto
 
+Spell Property mercOrdersSpell auto
+
 EXMMercSpawnerScript Property SpawnerScript Auto
 
 ;page 1
@@ -57,8 +59,12 @@ event OnInit()
 	Debug.Notification("Emissi's mercs initialized!")
 endEvent
 
-Function GivePlayerTheEmissiSpell()
-	Game.GetPlayer().AddSpell(summonEmissiSpell)
+Function GivePlayerTheEmissiSpell(Actor playerRef = none)
+	if(playerRef == none)
+		playerRef = Game.GetPlayer()
+	endIf
+	playerRef.AddSpell(summonEmissiSpell)
+	playerRef.AddSpell(mercOrdersSpell)
 endFunction
 
 Function OpenTheConfigMenu()

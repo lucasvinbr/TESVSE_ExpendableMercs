@@ -39,7 +39,8 @@ GlobalVariable Property DefaultRangerOrder Auto
 ; 0 = charge
 ; 1 = stay close to player
 ; 2 = hold target position
-; 3 = stand ground
+; 3 = stick to player, hold fire
+; 4 = stick to target position, hold fire
 
 ;so, in the merc faction, ranks 1 to 4 are archers, 5 to 8 are melee, 9 to 12 are rangers
 
@@ -52,13 +53,14 @@ Function StartOrderProcedure(ObjectReference hitSpot)
 		setOrderedGroupBoxChoice = SetOrdersTargetBox.Show()
 		if setOrderedGroupBoxChoice != 4
 			setDesiredOrderBoxChoice = SetDesiredOrderBox.Show()
-			if setDesiredOrderBoxChoice != 4
+			if setDesiredOrderBoxChoice != 5
 				;move markers if this is a "hold target pos" order
-				if(setDesiredOrderBoxChoice == 2)
+				if(setDesiredOrderBoxChoice == 2 || setDesiredOrderBoxChoice == 4)
 					MoveHoldPosMarker(setOrderedGroupBoxChoice, hitSpot)
 				endif
 				;order given, all windows should close now
 				GiveOrderToGroup(setOrderedGroupBoxChoice, setDesiredOrderBoxChoice)
+				SetDefaultOrder(setOrderedGroupBoxChoice, setDesiredOrderBoxChoice)
 				setOrderedGroupBoxChoice = 4 
 			endif
 		endif
@@ -80,14 +82,15 @@ Function GiveOrderToGroup(int targetGroup, int orderType)
 		if(mercRef != none)
 			mercActor = mercRef as Actor
 			;this crazy calc gets the merc type as 1,2 or 3 based on their current rank
-			mercType = ((((mercActor.GetFactionRank(MercsRankedFaction) - 1) as float) / 4.0) as int) + 1
+			mercType = ((((mercActor.GetFactionRank(MercsRankedFaction) - 1) as float) / 5.0) as int) + 1
 			if(mercType < 1)
 				;if, for some reason, we're not of any type, we're considered archers
 				mercType = 1
 			endif
 			
 			if (targetGroup == 0 || targetGroup == mercType)
-				mercActor.SetFactionRank(MercsRankedFaction, ((mercType - 1) * 4) + orderType + 1)
+				mercActor.SetFactionRank(MercsRankedFaction, ((mercType - 1) * 5) + orderType + 1)
+				mercActor.EvaluatePackage()
 			endif
 		endif
 	EndWhile
@@ -112,6 +115,8 @@ Function MoveHoldPosMarker(int targetGroup, ObjectReference newPos)
 	else
 		RangerMarker.GetReference().MoveTo(newPos)
 	endif
+	
+	
 endfunction
 
 
@@ -129,5 +134,17 @@ Function SetDefaultOrder(int targetGroup, int orderType)
 	else
 		DefaultRangerOrder.SetValue(orderFloat)
 	endif
+	
+	
+endfunction
 
+Function SetActorMercRank(Actor theActor, int orderType)
+	;this sets the actor's rank in the MercsRankedFaction.
+	;it's used for setting Emissi's rank.
+	;acceptable ranks for emissi are:
+	;6 (melee merc charge)
+	;9 (melee merc HF and Stick to Player)
+	;99 (flee from enemies)
+	;100 (stand still)
+	theActor.SetFactionRank(MercsRankedFaction, orderType)
 endfunction

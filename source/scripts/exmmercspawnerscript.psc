@@ -203,9 +203,9 @@ Function SpawnMerc(bool isArcher, bool usesSpecialAmmo = false, bool justOneMerc
 				mercActor.SetAV("Marksman", playerLevel * 2.5)
 				mercActor.SetAV("Sneak", playerLevel * 2.5)
 				if usesSpecialAmmo
-					mercActor.SetFactionRank(MercRankedFaction, (DefaultRangerOrder.GetValue() as int))
+					mercActor.SetFactionRank(MercRankedFaction, 11 + (DefaultRangerOrder.GetValue() as int))
 				else
-					mercActor.SetFactionRank(MercRankedFaction, (DefaultArcherOrder.GetValue() as int))
+					mercActor.SetFactionRank(MercRankedFaction, 1 + (DefaultArcherOrder.GetValue() as int))
 				endif
 			else
 				mercActor.SetAV("LightArmor", playerLevel * 1.0)
@@ -215,7 +215,7 @@ Function SpawnMerc(bool isArcher, bool usesSpecialAmmo = false, bool justOneMerc
 				mercActor.SetAV("TwoHanded", playerLevel * 2.1)
 				mercActor.SetAV("Marksman", playerLevel * 1.0)
 				
-				mercActor.SetFactionRank(MercRankedFaction, (DefaultMeleeOrder.GetValue() as int))
+				mercActor.SetFactionRank(MercRankedFaction, 6 + (DefaultMeleeOrder.GetValue() as int))
 			endif
 			
 			if mercsRegenHealth
@@ -252,7 +252,7 @@ Function MakeMercNoLongerNeeded(EXMClearRefOnDeath mercScript, bool shouldReHire
 	
 	if(autoReHireMercs && shouldReHireIfEnabled)
 		;1=archer, 2=melee, 3=ranger (check EXMCombatOrdersScript for more details)
-		int mercType = ((((theMerc.GetFactionRank(MercRankedFaction) - 1) as float) / 4.0) as int) + 1
+		int mercType = ((((theMerc.GetFactionRank(MercRankedFaction) - 1) as float) / 5.0) as int) + 1
 		if(mercType < 1)
 			;if, for some reason, we're not of any type, we're considered archers
 			mercType = 1

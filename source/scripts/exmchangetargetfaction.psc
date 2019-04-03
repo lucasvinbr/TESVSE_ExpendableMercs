@@ -8,18 +8,21 @@ Function MakeTargetFollower(Actor targetRef)
 	targetRef.RemoveFromFaction(SandboxerFaction)
 	targetRef.RemoveFromFaction(StickToEmissiFaction)
 	targetRef.AddToFaction(FollowerFaction)
+	targetRef.EvaluatePackage()
 endFunction
 
 Function MakeTargetSandboxer(Actor targetRef)
 	targetRef.RemoveFromFaction(FollowerFaction)
 	targetRef.RemoveFromFaction(StickToEmissiFaction)
 	targetRef.AddToFaction(SandboxerFaction)
+	targetRef.EvaluatePackage()
 endFunction
 
 Function MakeTargetStickToEmissi(Actor targetRef)
 	targetRef.RemoveFromFaction(SandboxerFaction)
 	targetRef.RemoveFromFaction(FollowerFaction)
 	targetRef.AddToFaction(StickToEmissiFaction)
+	targetRef.EvaluatePackage()
 endFunction
 
 Function MakeAllMercsFollowers()
