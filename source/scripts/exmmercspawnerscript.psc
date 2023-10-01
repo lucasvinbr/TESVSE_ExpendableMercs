@@ -273,8 +273,11 @@ Function MakeMercNoLongerNeeded(EXMClearRefOnDeath mercScript, bool shouldReHire
 	mercScript.Clear()
 	
 	theMerc.RemoveFromAllFactions()
-	
-	theMerc.DeleteWhenAble()
+
+	if !shouldReHireIfEnabled	
+		; this means the merc has been dismissed
+		theMerc.DeleteWhenAble()
+	endif
 	
 endFunction
 
