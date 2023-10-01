@@ -147,7 +147,7 @@ Function OpenTheConfigMenu()
 		
 		while(mainMsgOption == 3) ;extra options
 			int extraOption = 0
-			extraOption = ExtraOptionsBox.Show(BoolToFloat(SpawnerScript.autoReHireMercs), BoolToFloat(SpawnerScript.mercsRegenHealth), BoolToFloat(SpawnerScript.randomizeUnspecifiedItems))
+			extraOption = ExtraOptionsBox.Show(BoolToFloat(SpawnerScript.autoReHireMercs), BoolToFloat(SpawnerScript.mercsRegenHealth), BoolToFloat(SpawnerScript.randomizeUnspecifiedItems), BoolToFloat(SpawnerScript.giveDefaultClothesToMercs))
 			
 			if(extraOption == 0)
 				SpawnerScript.autoReHireMercs = !SpawnerScript.autoReHireMercs
@@ -155,6 +155,8 @@ Function OpenTheConfigMenu()
 				SpawnerScript.mercsRegenHealth = !SpawnerScript.mercsRegenHealth
 			elseif(extraOption == 2)
 				SpawnerScript.randomizeUnspecifiedItems = !SpawnerScript.randomizeUnspecifiedItems
+			elseif(extraOption == 3)
+				SpawnerScript.giveDefaultClothesToMercs = !SpawnerScript.giveDefaultClothesToMercs
 			else
 				mainMsgOption = -1
 			endIf

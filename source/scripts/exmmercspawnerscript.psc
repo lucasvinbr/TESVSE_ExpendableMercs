@@ -45,6 +45,9 @@ Bool Property randomizeUnspecifiedItems = False Auto
 Bool Property mercsRegenHealth = true Auto  
 {do mercs regenerate health with time, like the player?}
 
+Bool Property giveDefaultClothesToMercs = true Auto  
+{give rags/aprons etc to mercs, so that they don't spawn naked if no armor is provided?}
+
 Perk Property noTriggerTraps Auto
 
 Actor Property theEmissi  Auto  
@@ -165,12 +168,14 @@ Function SpawnMerc(bool isArcher, bool usesSpecialAmmo = false, bool justOneMerc
 				endif
 			endif
 			
-			;some default, low-rank clothes just in case the player didnt provide anything
-			Form newCuirass = defaultMercPossibleCuirasses
-			mercActor.AddItem(newCuirass)
-			
-			Form newBoots = defaultMercPossibleBoots
-			mercActor.AddItem(newBoots)
+			if giveDefaultClothesToMercs
+				;some default, low-rank clothes just in case the player didnt provide anything
+				Form newCuirass = defaultMercPossibleCuirasses
+				mercActor.AddItem(newCuirass)
+
+				Form newBoots = defaultMercPossibleBoots
+				mercActor.AddItem(newBoots)
+			endif
 			
 			TakeGoldFrom(playr, mercCost)
 			
